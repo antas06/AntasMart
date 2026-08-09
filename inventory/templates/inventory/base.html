@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Antas Mart - POS & Inventory System{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'inventory/css/styles.css' %}">
+</head>
+<body>
+
+    <!-- Top Corporate Navbar -->
+    <header class="navbar">
+        <div class="brand">
+            <div class="brand-icon"></div>
+            <div>
+                <div class="brand-title">Antas Mart</div>
+                <div class="brand-subtitle">Billing and Inventory Management</div>
+            </div>
+        </div>
+
+        <nav class="nav-links">
+            <a href="{% url 'pos_view' %}" class="nav-item {% if request.resolver_match.url_name == 'pos_view' %}active{% endif %}">
+                 POS Billing
+            </a>
+            {% if request.user.is_authenticated and request.user.is_superuser%}
+            <a href="{% url 'inventory_view' %}" class="nav-item {% if request.resolver_match.url_name == 'inventory_view' %}active{% endif %}">
+                 Inventory Catalog
+            </a>
+
+            <a href="{% url 'low_stock_view' %}" class="nav-item {% if request.resolver_match.url_name == 'low_stock_view' %}active{% endif %}">
+                 Low Stock Alerts
+            </a>
+
+            <a href="{% url 'sales_report' %}" class="nav-item {% if request.resolver_match.url_name == 'sales_report' %}active{% endif %}">
+                 Sales Report
+            </a>
+            {% endif %}
+
+            <a href="{% url 'sales_history_view' %}" class="nav-item {% if request.resolver_match.url_name == 'sales_history_view' %}active{% endif %}">
+                 Sales Transactions
+            </a>
+        </nav>
+
+        <div style="font-size: 0.85rem; color: #1e40af; font-weight: 600;">
+            🟢 {{ request.user.username }}
+            <form method="post" action="{% url 'logout' %}" style="display:inline; margin-left:.5rem;">
+                {% csrf_token %}
+                <button type="submit" style="border:0; background:transparent; color:#1e40af; font:inherit; cursor:pointer; text-decoration:underline;">Sign out</button>
+            </form>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-container">
+
+        <!-- Flash Messages -->
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% else %}info{% endif %}">
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>

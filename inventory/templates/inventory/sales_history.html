@@ -1,0 +1,51 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Sales History - Antas Mart{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 class="card-title" style="margin-bottom: 0; color: var(--primary-blue);">Sales Transactions</h2>
+        <div style="font-size: 0.95rem; color: var(--accent-green); font-weight: 700;">
+            Total Completed Sales: {{ sales|length }}
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Invoice Number</th>
+                    <th>Date & Time</th>
+                    <th>Items Count</th>
+                    <th>Total Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if sales %}
+                    {% for s in sales %}
+                        <tr>
+                            <td><code>#{{ s.invoice_number }}</code></td>
+                            <td>{{ s.created_at|date:"d M Y, h:i A" }}</td>
+                            <td>{{ s.items.count }} items</td>
+                            <td style="font-size: 1.05rem; font-weight: 700; color: #16a34a;">₹{{ s.total_amount|floatformat:2 }}</td>
+                            <td>
+                                <a href="{% url 'receipt_view' s.id %}" target="_blank" class="btn btn-outline btn-sm">
+                                    View Receipt
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
+                            No completed transactions found yet.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

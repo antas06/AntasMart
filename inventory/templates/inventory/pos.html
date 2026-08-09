@@ -1,0 +1,279 @@
+{% extends 'inventory/base.html' %}
+{% load static %}
+
+{% block title %}POS Billing - Antas Mart{% endblock %}
+
+{% block content %}
+<div class="pos-grid">
+
+    <!-- Left Column: Live Camera Scanner, Manual Input & Billing Cart -->
+    <div>
+        <div class="barcode-scanner-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <label class="form-label" style="font-size: 0.9rem; color: #1e40af; margin-bottom: 0; display: flex; align-items: center; gap: 0.4rem;">
+                    BARCODE ENTRY
+                </label>
+            </div>
+
+            <!-- Barcode Input Form -->
+            <form method="POST" action="{% url 'pos_view' %}" id="scan-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="scan">
+                <div style="display: flex; gap: 0.5rem; position: relative;">
+                    {{ barcode_form.barcode }}
+                    <button type="submit" class="btn btn-primary">Add</button>
+                    <div id="product-suggestions" hidden style="position:absolute; z-index:20; top:calc(100% + 4px); left:0; right:112px; background:#fff; border:1px solid #bfdbfe; border-radius:6px; box-shadow:0 6px 16px rgba(15,23,42,.15); overflow:hidden;"></div>
+                </div>
+                <small style="display:block; margin-top:.45rem; color:var(--text-muted);">Type a barcode or product name to search.</small>
+            </form>
+        </div>
+
+        <!-- Current Bill Table -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 class="card-title" style="margin-bottom: 0;">Current Billing Items</h2>
+                {% if cart %}
+                    <form method="POST" action="{% url 'pos_view' %}" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="clear_cart">
+                        <button type="submit" class="btn btn-outline btn-sm" style="color: var(--accent-red); border-color: #fecaca;">
+                            Clear Cart
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Weight</th>
+                            <th>Unit Price</th>
+                            <th>Quantity</th>
+                            <th>Subtotal</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if cart %}
+                            {% for item in cart %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.name }}</strong>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted);">Barcode: {{ item.barcode }}</div>
+                                    </td>
+                                    <td>{{ item.weight }}</td>
+                                    <td>₹{{ item.price|floatformat:2 }}</td>
+                                    <td>
+                                        <form method="POST" action="{% url 'pos_view' %}" style="display: flex; align-items: center; gap: 4px;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="update_qty">
+                                            <input type="hidden" name="item_index" value="{{ forloop.counter0 }}">
+                                            
+                                            <button type="submit" name="quantity" value="{{ item.quantity|add:-1 }}" class="qty-btn">-</button>
+                                            <span style="padding: 0 6px; font-weight: bold; min-width: 25px; text-align: center;">{{ item.quantity }}</span>
+                                            <button type="submit" name="quantity" value="{{ item.quantity|add:1 }}" class="qty-btn">+</button>
+                                        </form>
+                                    </td>
+                                    <td style="font-weight: 700; color: #16a34a;">₹{{ item.subtotal|floatformat:2 }}</td>
+                                    <td>
+                                        <form method="POST" action="{% url 'pos_view' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="remove_item">
+                                            <input type="hidden" name="item_index" value="{{ forloop.counter0 }}">
+                                            <button type="submit" class="btn btn-danger btn-sm" style="padding: 0.2rem 0.45rem; font-size: 0.75rem;">✕</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
+                                    Cart is empty.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Billing Summary, Select Item & Custom Item -->
+    <div>
+        <!-- Checkout Summary Card -->
+        <div class="card" style="margin-bottom: 1.25rem; background: #ffffff; border: 2px solid var(--accent-blue);">
+            <h2 class="card-title">Billing Summary</h2>
+            
+            <div class="summary-box">
+                <div class="summary-row">
+                    <span>Total Line Items:</span>
+                    <strong style="color: var(--text-main);">{{ cart|length }}</strong>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Amount:</span>
+                    <span>₹{{ total_bill|floatformat:2 }}</span>
+                </div>
+            </div>
+
+            {% if cart %}
+                <!-- TWO ACTION BUTTONS: Save Only (fast) and Save & Print -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 1.1rem;">
+                    <form method="POST" action="{% url 'pos_view' %}" id="form-save-only">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="checkout_save">
+                        <button type="submit" class="btn btn-primary btn-block" id="btn-save-only" style="padding: 0.75rem 0.5rem; font-size: 0.95rem; font-weight: 700;" title="Save Bill Only (F2)">
+                            Save <span class="kbd-hint">F2</span>
+                        </button>
+                    </form>
+                    <form method="POST" action="{% url 'pos_view' %}" id="form-save-print">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="checkout_print">
+                        <button type="submit" class="btn btn-success btn-block" id="btn-save-print" style="padding: 0.75rem 0.5rem; font-size: 0.95rem; font-weight: 700;" title="Save &amp; Print Bill (F4)">
+                            Print <span class="kbd-hint">F4</span>
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <button disabled class="btn btn-outline btn-block" style="margin-top: 1.1rem; opacity: 0.5; cursor: not-allowed;">
+                    Add items to cart
+                </button>
+            {% endif %}
+        </div>
+
+        <!-- Custom Item Form -->
+        <div class="card">
+            <h2 class="card-title">Add Custom Price Item</h2>
+            <form method="POST" action="{% url 'pos_view' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_custom">
+                <div class="form-group">
+                    <label class="form-label">Item Title</label>
+                    {{ custom_form.name }}
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">Weight</label>
+                        {{ custom_form.weight }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Price (₹)</label>
+                        {{ custom_form.price }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Quantity</label>
+                    {{ custom_form.quantity }}
+                </div>
+                <button type="submit" class="btn btn-outline btn-block">Add Custom Item to Bill</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Thermal Receipt Modal 
+{% if receipt_sale %}
+    <div class="modal-overlay" id="receiptModal">
+        <div class="modal-card" style="text-align: center;">
+            <h2 style="color: var(--accent-green); margin-bottom: 0.5rem;">🎉 Sale Completed Successfully!</h2>
+            <p style="color: var(--text-muted); margin-bottom: 1.25rem;">Invoice Number: <strong>#{{ receipt_sale.invoice_number }}</strong></p>
+            
+            <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                <a href="{% url 'receipt_view' receipt_sale.id %}" target="_blank" class="btn btn-primary" style="padding: 0.75rem 1.25rem;">
+                    🖨️ Open Thermal Receipt
+                </a>
+                <button onclick="document.getElementById('receiptModal').remove()" class="btn btn-outline">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+{% endif %}
+-->
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const barcodeInput = document.querySelector('.barcode-input');
+        if (barcodeInput) {
+            barcodeInput.focus();
+
+            let suggestionsTimer;
+            const suggestionsBox = document.getElementById('product-suggestions');
+            const hideSuggestions = () => {
+                suggestionsBox.hidden = true;
+                suggestionsBox.replaceChildren();
+            };
+            barcodeInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                clearTimeout(suggestionsTimer);
+                if (!query) {
+                    hideSuggestions();
+                    return;
+                }
+                suggestionsTimer = setTimeout(async () => {
+                    try {
+                        const response = await fetch(`{% url 'product_suggestions' %}?q=${encodeURIComponent(query)}`);
+                        const data = await response.json();
+                        suggestionsBox.replaceChildren();
+                        if (!data.products.length) {
+                            hideSuggestions();
+                            return;
+                        }
+                        data.products.forEach(product => {
+                            const option = document.createElement('button');
+                            option.type = 'button';
+                            option.style.cssText = 'display:block; width:100%; padding:.55rem .7rem; border:0; border-bottom:1px solid #e2e8f0; background:#fff; text-align:left; cursor:pointer;';
+                            option.textContent = `${product.name} (${product.weight}) — Barcode: ${product.barcode} · ₹${product.price} · Stock: ${product.quantity}`;
+                            option.addEventListener('click', () => {
+                                barcodeInput.value = product.barcode;
+                                document.getElementById('scan-form').submit();
+                            });
+                            suggestionsBox.appendChild(option);
+                        });
+                        suggestionsBox.hidden = false;
+                    } catch (error) {
+                        hideSuggestions();
+                    }
+                }, 180);
+            });
+            barcodeInput.addEventListener('blur', () => setTimeout(hideSuggestions, 150));
+        }
+
+        {% comment %} posScanner = new RealtimeBarcodeScanner({
+            videoElemId: 'scanner-video',
+            cameraSelectId: 'camera-select',
+            debounceMs: 1500,
+            onScan: function(code) {
+                if (barcodeInput) {
+                    barcodeInput.value = code;
+                    document.getElementById('scan-form').submit();
+                }
+            }
+        });
+
+        posScanner.init(); {% endcomment %}
+
+        //Keyboard Shortcuts
+        // F2 or Ctrl+S  → Save Only (fast checkout)
+        // F4 or Ctrl+P  → Save & Print (receipt modal)
+        document.addEventListener('keydown', function(e) {
+            const hasSaveBtn = document.getElementById('btn-save-only');
+            if (!hasSaveBtn) return;
+
+            if (e.key === 'F2' || (e.ctrlKey && e.key === 's')) {
+                e.preventDefault();
+                document.getElementById('form-save-only').submit();
+            }
+            if (e.key === 'F4' || (e.ctrlKey && e.key === 'p')) {
+                e.preventDefault();
+                document.getElementById('form-save-print').submit();
+            }
+        });
+    });
+</script>
+{% endblock %}

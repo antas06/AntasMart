@@ -1,0 +1,62 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Low Stock Alerts - Antas Mart{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <div>
+            <h2 class="card-title" style="margin-bottom: 0.25rem; color: var(--accent-blue);">Low Stock Alerts</h2>
+            <p style="color: var(--text-muted); font-size: 0.88rem;">Items with current quantity ≤ {{ threshold }} units</p>
+        </div>
+        
+        <form method="GET" action="{% url 'low_stock_view' %}" style="display: flex; align-items: center; gap: 0.5rem;">
+            <label class="form-label" style="margin-bottom: 0;">Threshold Limit:</label>
+            <input type="number" name="threshold" value="{{ threshold }}" min="1" max="100" class="form-control" style="width: 80px;" onchange="this.form.submit()">
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Barcode</th>
+                    <th>Product Name</th>
+                    <th>Weight</th>
+                    <th>Price</th>
+                    <th>Current Quantity</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if low_products %}
+                    {% for p in low_products %}
+                        <tr style="{% if p.quantity == 0 %}background-color: #fef2f2;{% endif %}">
+                            <td><code>{{ p.barcode }}</code></td>
+                            <td><strong>{{ p.name }}</strong></td>
+                            <td>{{ p.weight }}</td>
+                            <td>₹{{ p.price|floatformat:2 }}</td>
+                            <td style="font-size: 1.05rem; font-weight: 800; color: {% if p.quantity == 0 %}var(--accent-red){% else %}var(--accent-amber){% endif %};">
+                                {{ p.quantity }} units
+                            </td>
+                            <td>
+                                {% if p.quantity == 0 %}
+                                    <span class="badge-stock badge-out">OUT OF STOCK</span>
+                                {% else %}
+                                    <span class="badge-stock badge-warning">LOW</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #16a34a; padding: 3rem 1rem; font-weight: 600;">
+                            🎉 All products are well stocked! No items are currently below {{ threshold }} units.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

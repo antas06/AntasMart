@@ -1,0 +1,450 @@
+/* Antas Mart - Professional Corporate Blue & White Light Theme */
+:root {
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+    --primary-blue: #1e40af;
+    --accent-blue: #2563eb;
+    --accent-blue-hover: #1d4ed8;
+    --light-blue-bg: #eff6ff;
+    --light-blue-border: #bfdbfe;
+    --accent-green: #16a34a;
+    --accent-green-hover: #15803d;
+    --accent-amber: #d97706;
+    --accent-red: #dc2626;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --input-bg: #ffffff;
+    --table-header: #f1f5f9;
+    --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: var(--font-family);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Top Navbar */
+.navbar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #cbd5e1;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.brand-icon {
+    font-size: 1.5rem;
+    color: var(--primary-blue);
+}
+
+.brand-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    color: var(--primary-blue);
+}
+
+.brand-subtitle {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.nav-item {
+    color: #475569;
+    text-decoration: none;
+    padding: 0.55rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.nav-item:hover {
+    color: var(--primary-blue);
+    background-color: var(--light-blue-bg);
+}
+
+.nav-item.active {
+    color: #ffffff;
+    background-color: var(--primary-blue);
+}
+
+/* Connection Pill for Mobile Scanner */
+.mobile-sync-badge {
+    background-color: var(--light-blue-bg);
+    border: 1px solid var(--light-blue-border);
+    color: var(--primary-blue);
+    padding: 0.4rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.mobile-sync-badge:hover {
+    background-color: #dbeafe;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-green);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+}
+
+/* Main Container */
+.main-container {
+    flex: 1;
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Alerts */
+.messages-container {
+    margin-bottom: 1rem;
+}
+
+.alert {
+    padding: 0.85rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 0.6rem;
+}
+
+.alert-success {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+}
+
+.alert-error {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+}
+
+.alert-info {
+    background-color: var(--light-blue-bg);
+    border: 1px solid var(--light-blue-border);
+    color: #1d4ed8;
+}
+
+/* Cards & Layout */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-main);
+}
+
+.pos-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.25rem;
+}
+
+@media (max-width: 1024px) {
+    .pos-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Form Controls */
+.form-group {
+    margin-bottom: 0.9rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    background-color: var(--input-bg);
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    color: var(--text-main);
+    font-size: 0.92rem;
+    font-family: inherit;
+    transition: all 0.15s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.barcode-scanner-box {
+    background-color: var(--light-blue-bg);
+    border: 2px solid var(--accent-blue);
+    padding: 1.1rem;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+}
+
+.barcode-scanner-box .barcode-input {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.65rem 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: var(--accent-blue);
+    color: white;
+}
+.btn-primary:hover {
+    background-color: var(--accent-blue-hover);
+}
+
+.btn-success {
+    background-color: var(--accent-green);
+    color: white;
+}
+.btn-success:hover {
+    background-color: var(--accent-green-hover);
+}
+
+.btn-danger {
+    background-color: var(--accent-red);
+    color: white;
+}
+.btn-danger:hover {
+    background-color: #b91c1c;
+}
+
+.btn-outline {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: var(--text-main);
+}
+.btn-outline:hover {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.btn-sm {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+/* Tables */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.25rem;
+}
+
+.table th, .table td {
+    padding: 0.75rem 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid var(--card-border);
+    font-size: 0.9rem;
+}
+
+.table th {
+    background-color: var(--table-header);
+    color: #475569;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+}
+
+.table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Quantity controls */
+.qty-btn {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: var(--text-main);
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 4px;
+}
+.qty-btn:hover {
+    background-color: #e2e8f0;
+}
+
+/* Summary Box */
+.summary-box {
+    background-color: #f8fafc;
+    border-radius: 8px;
+    padding: 1.1rem;
+    margin-top: 0.85rem;
+    border: 1px solid var(--card-border);
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.65rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.summary-row.total {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--primary-blue);
+    border-top: 2px solid var(--card-border);
+    padding-top: 0.75rem;
+    margin-bottom: 0;
+}
+
+/* Badges */
+.badge-stock {
+    padding: 0.25rem 0.55rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge-ok {
+    background-color: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+.badge-warning {
+    background-color: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fef3c7;
+}
+
+.badge-out {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-card {
+    background-color: #ffffff;
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    padding: 1.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* ====================================================
+   KEYBOARD SHORTCUT HINT BADGES (on POS buttons)
+   ==================================================== */
+.kbd-hint {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.25);
+    border: 1px solid rgba(255,255,255,0.45);
+    color: inherit;
+    letter-spacing: 0px;
+    margin-left: 0.2rem;
+    vertical-align: middle;
+    opacity: 0.85;
+}
+

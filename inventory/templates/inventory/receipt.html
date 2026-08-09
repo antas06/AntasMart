@@ -1,0 +1,213 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Receipt #{{ sale.invoice_number }} - Antas Mart</title>
+    <style>
+        body {
+            background-color: #f1f5f9;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .receipt-card {
+            background: white;
+            color: black;
+            width: 80mm;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 6px;
+        }
+
+        .header h1 {
+            font-size: 16px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            font-size: 11px;
+            margin: 1px 0;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+
+        .item-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 6px 0;
+            font-size: 11px;
+        }
+
+        .item-table th {
+            border-bottom: 1px dashed #000;
+            text-align: left;
+            padding-bottom: 3px;
+        }
+
+        .item-table td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+
+        .item-table .qty, .item-table .rate, .item-table .amt {
+            text-align: right;
+        }
+
+        .total-section {
+            border-top: 1px dashed #000;
+            border-bottom: 1px dashed #000;
+            padding: 6px 0;
+            margin-top: 6px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 11px;
+        }
+
+        .print-btn-bar {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-print {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* -------------------------------------------------------------
+           THERMAL PRINTING OPTIMIZATIONS (FIXES EXCESS PAPER ROLL FEED)
+        ------------------------------------------------------------- */
+        @media print {
+            /* 1. Tell browser this is 80mm continuous roll paper with dynamic length */
+            @page {
+                size: 80mm auto;
+                margin: 0 !important; /* Removes browser default headers/footers (URL, Date) */
+            }
+
+            /* 2. Hide print button and background effects */
+            .no-print {
+                display: none !important;
+            }
+
+            html, body {
+                width: 80mm;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white;
+            }
+
+            .receipt-card {
+                box-shadow: none;
+                border-radius: 0;
+                width: 80mm;
+                padding: 4mm 5mm; /* Tight padding to prevent side overflow */
+                margin: 0 auto;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            /* Compact line heights to save paper */
+            .item-table td, .item-table th {
+                padding: 1px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div>
+        <div class="print-btn-bar no-print">
+            <button onclick="window.print()" class="btn-print">🖨️ Print Thermal Receipt</button>
+        </div>
+
+        <div class="receipt-card" id="thermal-receipt">
+            <div class="header">
+                <h1>ANTAS MART</h1>
+                <p>Supermarket POS & Retail</p>
+                <p>Tel: +91 98765 43210</p>
+            </div>
+
+            <div class="info-row">
+                <span>Invoice: #{{ sale.invoice_number }}</span>
+            </div>
+            <div class="info-row">
+                <span>Date: {{ sale.created_at|date:"d/m/Y h:i A" }}</span>
+            </div>
+
+            <table class="item-table">
+                <thead>
+                    <tr>
+                        <th style="width: 45%;">Item</th>
+                        <th class="qty" style="width: 15%;">Qty</th>
+                        <th class="rate" style="width: 20%;">Rate</th>
+                        <th class="amt" style="width: 20%;">Amt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in sale.items.all %}
+                        <tr>
+                            <td>
+                                {{ item.item_name }}
+                                {% if item.item_weight != 'N/A' %}
+                                    <br><small>({{ item.item_weight }})</small>
+                                {% endif %}
+                            </td>
+                            <td class="qty">{{ item.quantity }}</td>
+                            <td class="rate">₹{{ item.price|floatformat:2 }}</td>
+                            <td class="amt">₹{{ item.subtotal|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="total-section">
+                <div class="info-row" style="font-size: 13px;">
+                    <span>TOTAL BILL:</span>
+                    <span>₹{{ sale.total_amount|floatformat:2 }}</span>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>*** THANK YOU FOR SHOPPING ***</p>
+                <p>Visit Again at Antas Mart!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Trigger auto-print optional handler
+        window.addEventListener('DOMContentLoaded', (event) => {
+            // window.print();
+        });
+    </script>
+</body>
+</html>
