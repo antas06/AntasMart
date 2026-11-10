@@ -16,7 +16,11 @@
     --text-muted: #64748b;
     --input-bg: #ffffff;
     --table-header: #f1f5f9;
-    --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    --scanner-padding: 0.9rem;
+    --scanner-border: 2px;
+    --scanner-button-width: 80px;
+    --scanner-gap: 0.5rem;
 }
 
 * {
@@ -42,18 +46,15 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
 .brand {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-}
-
-.brand-icon {
-    font-size: 1.5rem;
-    color: var(--primary-blue);
 }
 
 .brand-title {
@@ -74,6 +75,7 @@ body {
 .nav-links {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.35rem;
 }
 
@@ -84,7 +86,6 @@ body {
     border-radius: 6px;
     font-weight: 600;
     font-size: 0.9rem;
-    transition: all 0.15s ease;
     display: flex;
     align-items: center;
     gap: 0.4rem;
@@ -98,34 +99,6 @@ body {
 .nav-item.active {
     color: #ffffff;
     background-color: var(--primary-blue);
-}
-
-/* Connection Pill for Mobile Scanner */
-.mobile-sync-badge {
-    background-color: var(--light-blue-bg);
-    border: 1px solid var(--light-blue-border);
-    color: var(--primary-blue);
-    padding: 0.4rem 0.85rem;
-    border-radius: 20px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    text-decoration: none;
-    transition: all 0.2s;
-}
-
-.mobile-sync-badge:hover {
-    background-color: #dbeafe;
-}
-
-.pulse-dot {
-    width: 8px;
-    height: 8px;
-    background-color: var(--accent-green);
-    border-radius: 50%;
-    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
 }
 
 /* Main Container */
@@ -223,7 +196,6 @@ body {
     color: var(--text-main);
     font-size: 0.92rem;
     font-family: inherit;
-    transition: all 0.15s ease;
 }
 
 .form-control:focus {
@@ -232,19 +204,98 @@ body {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-.barcode-scanner-box {
-    background-color: var(--light-blue-bg);
-    border: 2px solid var(--accent-blue);
-    padding: 1.1rem;
-    border-radius: 8px;
+.scanner-area {
+    position: relative;
     margin-bottom: 1.25rem;
 }
 
+.barcode-scanner-box {
+    background-color: var(--light-blue-bg);
+    border: var(--scanner-border) solid var(--accent-blue);
+    padding: var(--scanner-padding);
+    border-radius: 8px;
+}
+
+.scanner-label {
+    font-size: 0.8rem;
+    color: var(--primary-blue);
+    margin-bottom: 0.5rem;
+}
+
 .barcode-scanner-box .barcode-input {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    padding: 0.75rem 1rem;
+    letter-spacing: 0.3px;
+    padding: 0.6rem 0.8rem;
+}
+
+.scanner-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: var(--scanner-gap);
+}
+
+.scanner-add-btn {
+    flex: 0 0 var(--scanner-button-width);
+    width: var(--scanner-button-width);
+    white-space: nowrap;
+}
+
+.barcode-input-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Standalone product suggestions dropdown */
+.suggestions-box {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 6px);
+    left: calc(var(--scanner-padding) + var(--scanner-border));
+    right: calc(var(--scanner-padding) + var(--scanner-border) + var(--scanner-button-width) + var(--scanner-gap));
+    max-height: 260px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.suggestion-item {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 0;
+    border-bottom: 1px solid #f1f5f9;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+}
+
+.suggestion-item:last-child {
+    border-bottom: 0;
+}
+
+.suggestion-item:hover,
+.suggestion-item:focus {
+    background: #eff6ff;
+    outline: none;
+}
+
+.suggestion-title {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.suggestion-meta {
+    display: block;
+    margin-top: 1px;
+    font-size: 0.72rem;
+    color: #64748b;
 }
 
 /* Buttons */
@@ -259,7 +310,6 @@ body {
     border-radius: 6px;
     border: 1px solid transparent;
     cursor: pointer;
-    transition: all 0.15s ease;
     text-decoration: none;
 }
 
@@ -287,6 +337,14 @@ body {
     background-color: #b91c1c;
 }
 
+.btn-warning {
+    background-color: var(--accent-amber);
+    color: white;
+}
+.btn-warning:hover {
+    background-color: #b45309;
+}
+
 .btn-outline {
     background: #ffffff;
     border: 1px solid #cbd5e1;
@@ -304,6 +362,35 @@ body {
 
 .btn-block {
     width: 100%;
+}
+
+.checkout-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+    margin-top: 1.1rem;
+}
+
+@media (max-width: 420px) {
+    .checkout-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.page-info {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
 }
 
 /* Tables */
@@ -412,12 +499,12 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(15, 23, 42, 0.5);
-    backdrop-filter: blur(2px);
+    background: rgba(15, 23, 42, 0.55);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    padding: 1rem;
 }
 
 .modal-card {
@@ -426,13 +513,13 @@ body {
     border-radius: 10px;
     width: 90%;
     max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
     padding: 1.5rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
 }
 
-/* ====================================================
-   KEYBOARD SHORTCUT HINT BADGES (on POS buttons)
-   ==================================================== */
+
 .kbd-hint {
     display: inline-block;
     font-size: 0.62rem;

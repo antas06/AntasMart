@@ -5,14 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Antas Mart - POS & Inventory System{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'inventory/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'inventory/css/styles.css' %}?v=4">
 </head>
 <body>
 
     <!-- Top Corporate Navbar -->
     <header class="navbar">
         <div class="brand">
-            <div class="brand-icon"></div>
             <div>
                 <div class="brand-title">Antas Mart</div>
                 <div class="brand-subtitle">Billing and Inventory Management</div>
@@ -23,23 +22,23 @@
             <a href="{% url 'pos_view' %}" class="nav-item {% if request.resolver_match.url_name == 'pos_view' %}active{% endif %}">
                  POS Billing
             </a>
-            {% if request.user.is_authenticated and request.user.is_superuser%}
+            <a href="{% url 'returns_view' %}" class="nav-item {% if request.resolver_match.url_name == 'returns_view' %}active{% endif %}">
+                 Returns
+            </a>
+            <a href="{% url 'udhaar_view' %}" class="nav-item {% if request.resolver_match.url_name == 'udhaar_view' or request.resolver_match.url_name == 'udhaar_detail' %}active{% endif %}">
+                 Udhaar
+            </a>
+            <a href="{% url 'sales_history_view' %}" class="nav-item {% if request.resolver_match.url_name == 'sales_history_view' %}active{% endif %}">
+                 Sales Transactions
+            </a>
+            {% if request.user.is_authenticated and request.user.is_superuser %}
             <a href="{% url 'inventory_view' %}" class="nav-item {% if request.resolver_match.url_name == 'inventory_view' %}active{% endif %}">
                  Inventory Catalog
             </a>
-
-            <a href="{% url 'low_stock_view' %}" class="nav-item {% if request.resolver_match.url_name == 'low_stock_view' %}active{% endif %}">
-                 Low Stock Alerts
-            </a>
-
             <a href="{% url 'sales_report' %}" class="nav-item {% if request.resolver_match.url_name == 'sales_report' %}active{% endif %}">
                  Sales Report
             </a>
             {% endif %}
-
-            <a href="{% url 'sales_history_view' %}" class="nav-item {% if request.resolver_match.url_name == 'sales_history_view' %}active{% endif %}">
-                 Sales Transactions
-            </a>
         </nav>
 
         <div style="font-size: 0.85rem; color: #1e40af; font-weight: 600;">

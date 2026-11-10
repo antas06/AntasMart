@@ -1,0 +1,79 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Udhaar - Antas Mart{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 1.25rem; border: 2px solid var(--accent-blue);">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <div>
+            <h2 class="card-title" style="margin-bottom: 0.25rem; color: var(--accent-blue);">Udhaar (Customer Credit)</h2>
+            <p style="color: var(--text-muted); font-size: 0.88rem;">
+                Bills sent to udhaar are not counted as sales until the customer pays.
+            </p>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Total Pending</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--accent-amber);">₹{{ total_outstanding|floatformat:2 }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="pos-grid">
+    <div class="card">
+        <h2 class="card-title">Customers</h2>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Pending Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if customers %}
+                        {% for customer in customers %}
+                            <tr>
+                                <td><strong>{{ customer.name }}</strong></td>
+                                <td>{{ customer.phone|default:"—" }}</td>
+                                <td style="font-weight: 700; color: {% if customer.balance > 0 %}var(--accent-amber){% else %}var(--accent-green){% endif %};">
+                                    ₹{{ customer.balance|floatformat:2 }}
+                                </td>
+                                <td>
+                                    <a href="{% url 'udhaar_detail' customer.id %}" class="btn btn-outline btn-sm">Open</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2.5rem 1rem;">
+                                No udhaar customers yet.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div>
+        <div class="card">
+            <h2 class="card-title">Add Customer</h2>
+            <form method="POST" action="{% url 'udhaar_view' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_customer">
+                <div class="form-group">
+                    <label class="form-label">Customer Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="Full name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone (optional)</label>
+                    <input type="text" name="phone" class="form-control" placeholder="Mobile number">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Add Customer</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

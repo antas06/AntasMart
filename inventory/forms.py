@@ -3,11 +3,11 @@ from .models import Product
 
 class BarcodeSearchForm(forms.Form):
     barcode = forms.CharField(
-        max_length=100,
+        max_length=200,
         required=True,
         widget=forms.TextInput(attrs={
             'class': 'form-control barcode-input',
-            'placeholder': 'Scan or type barcode here & press Enter...',
+            'placeholder': 'Scan barcode or type product name...',
             'autofocus': 'autofocus',
             'autocomplete': 'off'
         })
@@ -24,13 +24,6 @@ class ProductForm(forms.ModelForm):
             'price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0', 'required': 'required'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'required': 'required'}),
         }
-
-class AddQuantityForm(forms.Form):
-    add_qty = forms.IntegerField(
-        min_value=1,
-        initial=1,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Qty to add'})
-    )
 
 class CustomItemForm(forms.Form):
     name = forms.CharField(

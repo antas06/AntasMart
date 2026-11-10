@@ -8,24 +8,23 @@
 
     <!-- Left Column: Live Camera Scanner, Manual Input & Billing Cart -->
     <div>
-        <div class="barcode-scanner-box">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                <label class="form-label" style="font-size: 0.9rem; color: #1e40af; margin-bottom: 0; display: flex; align-items: center; gap: 0.4rem;">
-                    BARCODE ENTRY
-                </label>
-            </div>
+        <div class="scanner-area">
+            <div class="barcode-scanner-box">
+                <label class="form-label scanner-label">BARCODE ENTRY</label>
 
-            <!-- Barcode Input Form -->
-            <form method="POST" action="{% url 'pos_view' %}" id="scan-form">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="scan">
-                <div style="display: flex; gap: 0.5rem; position: relative;">
-                    {{ barcode_form.barcode }}
-                    <button type="submit" class="btn btn-primary">Add</button>
-                    <div id="product-suggestions" hidden style="position:absolute; z-index:20; top:calc(100% + 4px); left:0; right:112px; background:#fff; border:1px solid #bfdbfe; border-radius:6px; box-shadow:0 6px 16px rgba(15,23,42,.15); overflow:hidden;"></div>
-                </div>
-                <small style="display:block; margin-top:.45rem; color:var(--text-muted);">Type a barcode or product name to search.</small>
-            </form>
+                <!-- Barcode Input Form -->
+                <form method="POST" action="{% url 'pos_view' %}" id="scan-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="scan">
+                    <div class="scanner-row">
+                        <div class="barcode-input-wrap">
+                            {{ barcode_form.barcode }}
+                        </div>
+                        <button type="submit" class="btn btn-primary scanner-add-btn">Add</button>
+                    </div>
+                </form>
+            </div>
+            <div id="product-suggestions" class="suggestions-box" hidden></div>
         </div>
 
         <!-- Current Bill Table -->
@@ -118,8 +117,8 @@
             </div>
 
             {% if cart %}
-                <!-- TWO ACTION BUTTONS: Save Only (fast) and Save & Print -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 1.1rem;">
+                <!-- THREE ACTION BUTTONS: Save Only, Save & Print, Send to Udhaar -->
+                <div class="checkout-actions">
                     <form method="POST" action="{% url 'pos_view' %}" id="form-save-only">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="checkout_save">
@@ -134,6 +133,9 @@
                             Print <span class="kbd-hint">F4</span>
                         </button>
                     </form>
+                    <button type="button" class="btn btn-warning btn-block" onclick="openUdhaarModal()" style="padding: 0.75rem 0.5rem; font-size: 0.95rem; font-weight: 700;" title="Send this bill to customer udhaar">
+                        Udhaar
+                    </button>
                 </div>
             {% else %}
                 <button disabled class="btn btn-outline btn-block" style="margin-top: 1.1rem; opacity: 0.5; cursor: not-allowed;">
@@ -172,95 +174,133 @@
     </div>
 </div>
 
-<!-- Thermal Receipt Modal 
-{% if receipt_sale %}
-    <div class="modal-overlay" id="receiptModal">
-        <div class="modal-card" style="text-align: center;">
-            <h2 style="color: var(--accent-green); margin-bottom: 0.5rem;">🎉 Sale Completed Successfully!</h2>
-            <p style="color: var(--text-muted); margin-bottom: 1.25rem;">Invoice Number: <strong>#{{ receipt_sale.invoice_number }}</strong></p>
-            
-            <div style="display: flex; gap: 0.75rem; justify-content: center;">
-                <a href="{% url 'receipt_view' receipt_sale.id %}" target="_blank" class="btn btn-primary" style="padding: 0.75rem 1.25rem;">
-                    🖨️ Open Thermal Receipt
-                </a>
-                <button onclick="document.getElementById('receiptModal').remove()" class="btn btn-outline">
-                    Close
-                </button>
+<!-- Udhaar customer picker -->
+{% if cart %}
+<div class="modal-overlay" id="udhaarModal" style="display: none;">
+    <div class="modal-card">
+        <h2 class="card-title" style="color: var(--accent-amber);">Send Bill to Udhaar</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">
+            Bill total: <strong style="color: var(--text-main); font-size: 1.1rem;">₹{{ total_bill|floatformat:2 }}</strong>
+        </p>
+
+        <form method="POST" action="{% url 'pos_view' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="checkout_udhaar">
+
+            <div class="form-group">
+                <label class="form-label">Select existing customer</label>
+                <select name="customer_id" id="udhaar-customer" class="form-control">
+                    <option value="">— New customer —</option>
+                    {% for customer in customers %}
+                        <option value="{{ customer.id }}">
+                            {{ customer.name }}{% if customer.phone %} · {{ customer.phone }}{% endif %} (₹{{ customer.balance|floatformat:2 }} pending)
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
+
+            <div class="form-group">
+                <label class="form-label">New customer name</label>
+                <input type="text" name="new_customer_name" class="form-control" placeholder="Leave blank if selected above">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Phone (optional)</label>
+                <input type="text" name="new_customer_phone" class="form-control" placeholder="Mobile number">
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-top: 1.25rem;">
+                <button type="submit" class="btn btn-warning btn-block" style="padding: 0.75rem;">
+                    Confirm Udhaar
+                </button>
+                <button type="button" class="btn btn-outline" onclick="closeUdhaarModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Sale saved / print prompt -->
+{% if receipt_sale %}
+<div class="modal-overlay" id="receiptModal">
+    <div class="modal-card" style="text-align: center;">
+        <h2 style="color: var(--accent-green); margin-bottom: 0.5rem;">Bill Saved</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.25rem;">
+            Invoice: <strong>#{{ receipt_sale.invoice_number }}</strong> ·
+            ₹{{ receipt_sale.total_amount|floatformat:2 }}
+        </p>
+        {% if receipt_sale.payment_type == 'udhaar' %}
+            <p style="color: var(--accent-amber); font-weight: 700; margin-bottom: 1rem;">
+                Udhaar{% if receipt_sale.customer %} · {{ receipt_sale.customer.name }}{% endif %}
+            </p>
+        {% endif %}
+        <div style="display: flex; gap: 0.75rem; justify-content: center;">
+            <a href="{% url 'receipt_view' receipt_sale.id %}" target="_blank" class="btn btn-primary">
+                Print Receipt
+            </a>
+            <button type="button" onclick="document.getElementById('receiptModal').remove()" class="btn btn-outline">
+                Close
+            </button>
         </div>
     </div>
+</div>
 {% endif %}
--->
 
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'inventory/js/product-suggest.js' %}?v=4"></script>
 <script>
+    function openUdhaarModal() {
+        const modal = document.getElementById('udhaarModal');
+        if (!modal) return;
+        modal.style.display = 'flex';
+        const select = document.getElementById('udhaar-customer');
+        if (select) select.focus();
+    }
+
+    function closeUdhaarModal() {
+        const modal = document.getElementById('udhaarModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeUdhaarModal();
+    });
 
     document.addEventListener("DOMContentLoaded", function() {
         const barcodeInput = document.querySelector('.barcode-input');
-        if (barcodeInput) {
-            barcodeInput.focus();
+        if (barcodeInput) barcodeInput.focus();
 
-            let suggestionsTimer;
-            const suggestionsBox = document.getElementById('product-suggestions');
-            const hideSuggestions = () => {
-                suggestionsBox.hidden = true;
-                suggestionsBox.replaceChildren();
-            };
-            barcodeInput.addEventListener('input', function() {
-                const query = this.value.trim();
-                clearTimeout(suggestionsTimer);
-                if (!query) {
-                    hideSuggestions();
-                    return;
-                }
-                suggestionsTimer = setTimeout(async () => {
-                    try {
-                        const response = await fetch(`{% url 'product_suggestions' %}?q=${encodeURIComponent(query)}`);
-                        const data = await response.json();
-                        suggestionsBox.replaceChildren();
-                        if (!data.products.length) {
-                            hideSuggestions();
-                            return;
-                        }
-                        data.products.forEach(product => {
-                            const option = document.createElement('button');
-                            option.type = 'button';
-                            option.style.cssText = 'display:block; width:100%; padding:.55rem .7rem; border:0; border-bottom:1px solid #e2e8f0; background:#fff; text-align:left; cursor:pointer;';
-                            option.textContent = `${product.name} (${product.weight}) — Barcode: ${product.barcode} · ₹${product.price} · Stock: ${product.quantity}`;
-                            option.addEventListener('click', () => {
-                                barcodeInput.value = product.barcode;
-                                document.getElementById('scan-form').submit();
-                            });
-                            suggestionsBox.appendChild(option);
-                        });
-                        suggestionsBox.hidden = false;
-                    } catch (error) {
-                        hideSuggestions();
-                    }
-                }, 180);
-            });
-            barcodeInput.addEventListener('blur', () => setTimeout(hideSuggestions, 150));
-        }
-
-        {% comment %} posScanner = new RealtimeBarcodeScanner({
-            videoElemId: 'scanner-video',
-            cameraSelectId: 'camera-select',
-            debounceMs: 1500,
-            onScan: function(code) {
-                if (barcodeInput) {
-                    barcodeInput.value = code;
-                    document.getElementById('scan-form').submit();
-                }
-            }
+        initProductSuggestions({
+            inputSelector: '.barcode-input',
+            boxId: 'product-suggestions',
+            formId: 'scan-form',
+            endpoint: "{% url 'product_suggestions' %}"
         });
 
-        posScanner.init(); {% endcomment %}
+        // Keep the udhaar picker and new-customer fields mutually exclusive.
+        const udhaarSelect = document.getElementById('udhaar-customer');
+        if (udhaarSelect) {
+            const udhaarForm = udhaarSelect.closest('form');
+            const newName = udhaarForm.querySelector('[name="new_customer_name"]');
+            const newPhone = udhaarForm.querySelector('[name="new_customer_phone"]');
+            udhaarSelect.addEventListener('change', function () {
+                if (this.value) {
+                    newName.value = '';
+                    newPhone.value = '';
+                }
+            });
+            newName.addEventListener('input', function () {
+                if (this.value.trim()) {
+                    udhaarSelect.value = '';
+                }
+            });
+        }
 
-        //Keyboard Shortcuts
-        // F2 or Ctrl+S  → Save Only (fast checkout)
-        // F4 or Ctrl+P  → Save & Print (receipt modal)
+        // Keyboard shortcuts
+        // F2 or Ctrl+S -> Save only
+        // F4 or Ctrl+P -> Save & print
+        // F8 -> Send bill to udhaar
         document.addEventListener('keydown', function(e) {
             const hasSaveBtn = document.getElementById('btn-save-only');
             if (!hasSaveBtn) return;
@@ -272,6 +312,10 @@
             if (e.key === 'F4' || (e.ctrlKey && e.key === 'p')) {
                 e.preventDefault();
                 document.getElementById('form-save-print').submit();
+            }
+            if (e.key === 'F8') {
+                e.preventDefault();
+                openUdhaarModal();
             }
         });
     });

@@ -7,7 +7,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
         <h2 class="card-title" style="margin-bottom: 0; color: var(--primary-blue);">Sales Transactions</h2>
         <div style="font-size: 0.95rem; color: var(--accent-green); font-weight: 700;">
-            Total Completed Sales: {{ sales|length }}
+            Total: {{ page_obj.paginator.count }}
         </div>
     </div>
 
@@ -16,8 +16,10 @@
             <thead>
                 <tr>
                     <th>Invoice Number</th>
-                    <th>Date & Time</th>
-                    <th>Items Count</th>
+                    <th>Date &amp; Time</th>
+                    <th>Payment</th>
+                    <th>Customer</th>
+                    <th>Items</th>
                     <th>Total Amount</th>
                     <th>Action</th>
                 </tr>
@@ -28,7 +30,15 @@
                         <tr>
                             <td><code>#{{ s.invoice_number }}</code></td>
                             <td>{{ s.created_at|date:"d M Y, h:i A" }}</td>
-                            <td>{{ s.items.count }} items</td>
+                            <td>
+                                {% if s.payment_type == 'udhaar' %}
+                                    <span class="badge-stock badge-warning">Udhaar</span>
+                                {% else %}
+                                    <span class="badge-stock badge-ok">Cash</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ s.customer.name|default:"—" }}</td>
+                            <td>{{ s.item_count }} items</td>
                             <td style="font-size: 1.05rem; font-weight: 700; color: #16a34a;">₹{{ s.total_amount|floatformat:2 }}</td>
                             <td>
                                 <a href="{% url 'receipt_view' s.id %}" target="_blank" class="btn btn-outline btn-sm">
@@ -39,7 +49,7 @@
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
                             No completed transactions found yet.
                         </td>
                     </tr>
@@ -47,5 +57,45 @@
             </tbody>
         </table>
     </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a class="btn btn-outline btn-sm" href="?page={{ page_obj.previous_page_number }}">← Previous</a>
+            {% endif %}
+            <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a class="btn btn-outline btn-sm" href="?page={{ page_obj.next_page_number }}">Next →</a>
+            {% endif %}
+        </div>
+    {% endif %}
 </div>
+
+{% if payments %}
+<div class="card" style="margin-top: 1.25rem;">
+    <h2 class="card-title" style="color: var(--accent-green);">Udhaar Payments Received</h2>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date &amp; Time</th>
+                    <th>Customer</th>
+                    <th>Note</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.created_at|date:"d M Y, h:i A" }}</td>
+                        <td><a href="{% url 'udhaar_detail' payment.customer.id %}">{{ payment.customer.name }}</a></td>
+                        <td>{{ payment.note|default:"—" }}</td>
+                        <td style="font-weight: 700; color: var(--accent-green);">₹{{ payment.amount|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

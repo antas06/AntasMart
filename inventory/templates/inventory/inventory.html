@@ -1,5 +1,4 @@
 {% extends 'inventory/base.html' %}
-{% load static %}
 
 {% block title %}Inventory Catalog & Restock - Antas Mart{% endblock %}
 
@@ -162,7 +161,7 @@
         </form>
     </div>
     <div>
-        Total Product :<b> {{ products|length }} items </b>| 
+        Total Products: <b>{{ total_products }} items</b> |
         Total Inventory Value: <b>₹{{ total_inventory_value|floatformat:2 }}</b>
     </div>
 <br>
@@ -191,8 +190,6 @@
                             <td>
                                 {% if p.quantity == 0 %}
                                     <span class="badge-stock badge-out">Out of Stock</span>
-                                {% elif p.quantity <= 5 %}
-                                    <span class="badge-stock badge-warning">Low Stock ({{ p.quantity }})</span>
                                 {% else %}
                                     <span class="badge-stock badge-ok">In Stock</span>
                                 {% endif %}
@@ -218,6 +215,18 @@
             </tbody>
         </table>
     </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a class="btn btn-outline btn-sm" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}">← Previous</a>
+            {% endif %}
+            <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a class="btn btn-outline btn-sm" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}">Next →</a>
+            {% endif %}
+        </div>
+    {% endif %}
 </div>
 
 {% endblock %}

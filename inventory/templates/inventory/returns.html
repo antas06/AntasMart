@@ -1,0 +1,204 @@
+{% extends 'inventory/base.html' %}
+{% load static %}
+
+{% block title %}Returns - Antas Mart{% endblock %}
+
+{% block content %}
+<div class="pos-grid">
+
+    <!-- Left: scan and return cart -->
+    <div>
+        <div class="scanner-area">
+            <div class="barcode-scanner-box">
+                <label class="form-label scanner-label">RETURN ITEM SCAN</label>
+                <form method="POST" action="{% url 'returns_view' %}" id="return-scan-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="scan">
+                    <div class="scanner-row">
+                        <div class="barcode-input-wrap">
+                            {{ barcode_form.barcode }}
+                        </div>
+                        <button type="submit" class="btn btn-primary scanner-add-btn">Add</button>
+                    </div>
+                </form>
+            </div>
+            <div id="return-product-suggestions" class="suggestions-box" hidden></div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 class="card-title" style="margin-bottom: 0;">Items to Return</h2>
+                {% if cart %}
+                    <form method="POST" action="{% url 'returns_view' %}" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="clear_cart">
+                        <button type="submit" class="btn btn-outline btn-sm" style="color: var(--accent-red); border-color: #fecaca;">
+                            Clear
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Weight</th>
+                            <th>Unit Price</th>
+                            <th>Quantity</th>
+                            <th>Subtotal</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if cart %}
+                            {% for item in cart %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.name }}</strong>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted);">Barcode: {{ item.barcode }}</div>
+                                    </td>
+                                    <td>{{ item.weight }}</td>
+                                    <td>₹{{ item.price|floatformat:2 }}</td>
+                                    <td>
+                                        <form method="POST" action="{% url 'returns_view' %}" style="display: flex; align-items: center; gap: 4px;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="update_qty">
+                                            <input type="hidden" name="item_index" value="{{ forloop.counter0 }}">
+                                            <button type="submit" name="quantity" value="{{ item.quantity|add:-1 }}" class="qty-btn">-</button>
+                                            <span style="padding: 0 6px; font-weight: bold; min-width: 25px; text-align: center;">{{ item.quantity }}</span>
+                                            <button type="submit" name="quantity" value="{{ item.quantity|add:1 }}" class="qty-btn">+</button>
+                                        </form>
+                                    </td>
+                                    <td style="font-weight: 700; color: var(--accent-blue);">₹{{ item.subtotal|floatformat:2 }}</td>
+                                    <td>
+                                        <form method="POST" action="{% url 'returns_view' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="remove_item">
+                                            <input type="hidden" name="item_index" value="{{ forloop.counter0 }}">
+                                            <button type="submit" class="btn btn-danger btn-sm" style="padding: 0.2rem 0.45rem; font-size: 0.75rem;">✕</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
+                                    Scan a product to start a return.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: confirm -->
+    <div>
+        <div class="card" style="margin-bottom: 1.25rem; border: 2px solid var(--accent-blue);">
+            <h2 class="card-title">Return Summary</h2>
+            <div class="summary-box">
+                <div class="summary-row">
+                    <span>Total Items:</span>
+                    <strong style="color: var(--text-main);">{{ cart|length }}</strong>
+                </div>
+                <div class="summary-row total" style="color: var(--accent-blue);">
+                    <span>Refund Amount:</span>
+                    <span>₹{{ total_return|floatformat:2 }}</span>
+                </div>
+            </div>
+
+            {% if cart %}
+                <form method="POST" action="{% url 'returns_view' %}" style="margin-top: 1rem;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="confirm">
+                    <div class="form-group">
+                        <label class="form-label">Note (optional)</label>
+                        <input type="text" name="note" class="form-control" placeholder="Reason for return">
+                    </div>
+                    <button type="submit" class="btn btn-danger btn-block" style="padding: 0.8rem;">
+                        Confirm Return
+                    </button>
+                </form>
+            {% else %}
+                <button disabled class="btn btn-outline btn-block" style="margin-top: 1.1rem; opacity: 0.5; cursor: not-allowed;">
+                    Add items to return
+                </button>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Today's Returns</h2>
+            <div class="summary-box" style="margin-top: 0;">
+                <div class="summary-row total" style="color: var(--accent-blue); margin-bottom: 0;">
+                    <span>Total:</span>
+                    <span>₹{{ today_return_total|floatformat:2 }}</span>
+                </div>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.75rem;">
+                Returned items are added back to stock and deducted from today's sales.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 1.25rem;">
+    <h2 class="card-title">Recent Returns</h2>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Return No.</th>
+                    <th>Date &amp; Time</th>
+                    <th>Items</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if recent_returns %}
+                    {% for record in recent_returns %}
+                        <tr>
+                            <td><code>{{ record.return_number }}</code></td>
+                            <td>{{ record.created_at|date:"d M Y, h:i A" }}</td>
+                            <td>
+                                {% for item in record.items.all %}
+                                    {{ item.quantity }}× {{ item.item_name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                                {% if record.note %}
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Note: {{ record.note }}</div>
+                                {% endif %}
+                            </td>
+                            <td style="font-weight: 700; color: var(--accent-red);">₹{{ record.total_amount|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2.5rem 1rem;">
+                            No returns recorded yet.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'inventory/js/product-suggest.js' %}?v=4"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.querySelector('.barcode-input');
+        if (input) input.focus();
+
+        initProductSuggestions({
+            inputSelector: '.barcode-input',
+            boxId: 'return-product-suggestions',
+            formId: 'return-scan-form',
+            endpoint: "{% url 'product_suggestions' %}"
+        });
+    });
+</script>
+{% endblock %}

@@ -3,211 +3,320 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receipt #{{ sale.invoice_number }} - Antas Mart</title>
     <style>
+        :root {
+            --paper-width: 58mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f1f5f9;
+            background: #f1f5f9;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 20px;
+            padding: 16px;
             margin: 0;
+            color: #000;
+        }
+
+        .print-toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background: #ffffff;
+            border-bottom: 1px solid #cbd5e1;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+
+        .print-toolbar select {
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font: inherit;
+            background: #fff;
+        }
+
+        .btn-print {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            padding: 9px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-print:hover {
+            background: #1d4ed8;
+        }
+
+        .toolbar-hint {
+            font-size: 12px;
+            color: #64748b;
         }
 
         .receipt-card {
-            background: white;
-            color: black;
-            width: 80mm;
-            padding: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            border-radius: 4px;
-            box-sizing: border-box;
+            background: #fff;
+            color: #000;
+            width: var(--paper-width);
+            margin-top: 64px;
+            padding: 3mm 3.5mm;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+            border-radius: 3px;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             border-bottom: 1px dashed #000;
-            padding-bottom: 6px;
+            padding-bottom: 4px;
         }
 
         .header h1 {
-            font-size: 16px;
+            font-size: 15px;
             margin: 0;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .header p {
-            font-size: 11px;
+            font-size: 9.5px;
             margin: 1px 0;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            font-size: 11px;
-            margin-bottom: 2px;
+            gap: 6px;
+            font-size: 10px;
+            line-height: 1.35;
+            margin-bottom: 1px;
+        }
+
+        .info-row span:last-child {
+            text-align: right;
         }
 
         .item-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 6px 0;
-            font-size: 11px;
+            margin: 5px 0;
+            font-size: 10px;
+            table-layout: fixed;
         }
 
         .item-table th {
             border-bottom: 1px dashed #000;
             text-align: left;
-            padding-bottom: 3px;
+            padding-bottom: 2px;
+            font-size: 9.5px;
         }
 
         .item-table td {
             padding: 2px 0;
             vertical-align: top;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
-        .item-table .qty, .item-table .rate, .item-table .amt {
+        .item-table .qty,
+        .item-table .rate,
+        .item-table .amt {
             text-align: right;
+        }
+
+        .item-name {
+            font-size: 10px;
+        }
+
+        .item-weight {
+            font-size: 8.5px;
+            color: #333;
         }
 
         .total-section {
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
-            padding: 6px 0;
-            margin-top: 6px;
-            font-weight: bold;
-            font-size: 12px;
+            padding: 4px 0;
+            margin-top: 4px;
+            font-weight: 700;
+            font-size: 11.5px;
         }
 
         .footer {
             text-align: center;
-            margin-top: 10px;
-            font-size: 11px;
-        }
-
-        .print-btn-bar {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .btn-print {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
+            margin-top: 7px;
+            font-size: 9.5px;
+            line-height: 1.4;
         }
 
         /* -------------------------------------------------------------
-           THERMAL PRINTING OPTIMIZATIONS (FIXES EXCESS PAPER ROLL FEED)
+           THERMAL PRINTING: 58mm / 80mm continuous roll
         ------------------------------------------------------------- */
         @media print {
-            /* 1. Tell browser this is 80mm continuous roll paper with dynamic length */
-            @page {
-                size: 80mm auto;
-                margin: 0 !important; /* Removes browser default headers/footers (URL, Date) */
-            }
-
-            /* 2. Hide print button and background effects */
             .no-print {
                 display: none !important;
             }
 
-            html, body {
-                width: 80mm;
+            html,
+            body {
+                width: var(--paper-width);
                 margin: 0 !important;
                 padding: 0 !important;
-                background: white;
+                background: #fff;
+                display: block;
             }
 
             .receipt-card {
+                width: var(--paper-width);
+                margin: 0;
+                padding: 1.5mm 2mm;
                 box-shadow: none;
                 border-radius: 0;
-                width: 80mm;
-                padding: 4mm 5mm; /* Tight padding to prevent side overflow */
-                margin: 0 auto;
-                page-break-inside: avoid;
-                break-inside: avoid;
             }
 
-            /* Compact line heights to save paper */
-            .item-table td, .item-table th {
+            .item-table td,
+            .item-table th {
                 padding: 1px 0;
+            }
+
+            .header h1 {
+                font-size: 14px;
+            }
+
+            .header p,
+            .info-row,
+            .item-table,
+            .item-name {
+                font-size: 9.5px;
+            }
+
+            .total-section {
+                font-size: 11px;
             }
         }
     </style>
+    <style id="page-size-style">@page { size: 58mm auto; margin: 0; }</style>
 </head>
 <body>
 
-    <div>
-        <div class="print-btn-bar no-print">
-            <button onclick="window.print()" class="btn-print">🖨️ Print Thermal Receipt</button>
+    <div class="print-toolbar no-print">
+        <label for="paper-size" style="font-size:13px; font-weight:600;">Paper:</label>
+        <select id="paper-size">
+            <option value="58mm">58mm (2 inch)</option>
+            <option value="80mm">80mm (3 inch)</option>
+        </select>
+        <button type="button" onclick="window.print()" class="btn-print">Print Receipt</button>
+        <span class="toolbar-hint">Set the same paper size in the print dialog.</span>
+    </div>
+
+    <div class="receipt-card" id="thermal-receipt">
+        <div class="header">
+            <h1>ANTAS MART</h1>
+            <p>Supermarket POS &amp; Retail</p>
+            <p>Tel: +91 98765 43210</p>
         </div>
 
-        <div class="receipt-card" id="thermal-receipt">
-            <div class="header">
-                <h1>ANTAS MART</h1>
-                <p>Supermarket POS & Retail</p>
-                <p>Tel: +91 98765 43210</p>
-            </div>
+        <div class="info-row">
+            <span>Invoice:</span>
+            <span>#{{ sale.invoice_number }}</span>
+        </div>
+        <div class="info-row">
+            <span>Date:</span>
+            <span>{{ sale.created_at|date:"d/m/Y h:i A" }}</span>
+        </div>
+        {% if sale.payment_type == 'udhaar' and sale.customer %}
+        <div class="info-row">
+            <span>Payment:</span>
+            <span>UDHAAR</span>
+        </div>
+        <div class="info-row">
+            <span>Customer:</span>
+            <span>{{ sale.customer.name }}</span>
+        </div>
+        {% endif %}
 
-            <div class="info-row">
-                <span>Invoice: #{{ sale.invoice_number }}</span>
-            </div>
-            <div class="info-row">
-                <span>Date: {{ sale.created_at|date:"d/m/Y h:i A" }}</span>
-            </div>
-
-            <table class="item-table">
-                <thead>
+        <table class="item-table">
+            <thead>
+                <tr>
+                    <th style="width: 44%;">Item</th>
+                    <th class="qty" style="width: 14%;">Qty</th>
+                    <th class="rate" style="width: 21%;">Rate</th>
+                    <th class="amt" style="width: 21%;">Amt</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in sale.items.all %}
                     <tr>
-                        <th style="width: 45%;">Item</th>
-                        <th class="qty" style="width: 15%;">Qty</th>
-                        <th class="rate" style="width: 20%;">Rate</th>
-                        <th class="amt" style="width: 20%;">Amt</th>
+                        <td>
+                            <span class="item-name">{{ item.item_name }}</span>
+                            {% if item.item_weight != 'N/A' %}
+                                <br><span class="item-weight">({{ item.item_weight }})</span>
+                            {% endif %}
+                        </td>
+                        <td class="qty">{{ item.quantity }}</td>
+                        <td class="rate">₹{{ item.price|floatformat:2 }}</td>
+                        <td class="amt">₹{{ item.subtotal|floatformat:2 }}</td>
                     </tr>
-                </thead>
-                <tbody>
-                    {% for item in sale.items.all %}
-                        <tr>
-                            <td>
-                                {{ item.item_name }}
-                                {% if item.item_weight != 'N/A' %}
-                                    <br><small>({{ item.item_weight }})</small>
-                                {% endif %}
-                            </td>
-                            <td class="qty">{{ item.quantity }}</td>
-                            <td class="rate">₹{{ item.price|floatformat:2 }}</td>
-                            <td class="amt">₹{{ item.subtotal|floatformat:2 }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                {% endfor %}
+            </tbody>
+        </table>
 
-            <div class="total-section">
-                <div class="info-row" style="font-size: 13px;">
-                    <span>TOTAL BILL:</span>
-                    <span>₹{{ sale.total_amount|floatformat:2 }}</span>
-                </div>
+        <div class="total-section">
+            <div class="info-row" style="font-size: inherit; margin: 0;">
+                <span>TOTAL BILL:</span>
+                <span>₹{{ sale.total_amount|floatformat:2 }}</span>
             </div>
+        </div>
 
-            <div class="footer">
-                <p>*** THANK YOU FOR SHOPPING ***</p>
-                <p>Visit Again at Antas Mart!</p>
-            </div>
+        <div class="footer">
+            <p>*** THANK YOU FOR SHOPPING ***</p>
+            <p>Visit Again at Antas Mart!</p>
         </div>
     </div>
 
     <script>
-        // Trigger auto-print optional handler
-        window.addEventListener('DOMContentLoaded', (event) => {
-            // window.print();
-        });
+        (function () {
+            var select = document.getElementById('paper-size');
+            var pageStyle = document.getElementById('page-size-style');
+
+            function applySize(size) {
+                document.documentElement.style.setProperty('--paper-width', size);
+                pageStyle.textContent = '@page { size: ' + size + ' auto; margin: 0; }';
+                select.value = size;
+                try {
+                    localStorage.setItem('antas_receipt_paper', size);
+                } catch (e) {
+                    /* localStorage can be disabled */
+                }
+            }
+
+            var saved = '58mm';
+            try {
+                saved = localStorage.getItem('antas_receipt_paper') || '58mm';
+            } catch (e) {
+                saved = '58mm';
+            }
+            applySize(saved);
+
+            select.addEventListener('change', function () {
+                applySize(this.value);
+            });
+        })();
     </script>
 </body>
 </html>
